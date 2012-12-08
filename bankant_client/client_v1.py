@@ -1,6 +1,6 @@
 from time import sleep
 from urlparse import urljoin
-#from json import loads, dumps
+from json import loads, dumps
 
 import requests
 
@@ -9,18 +9,19 @@ API_URL = "http://ec2-54-252-42-78.ap-southeast-2.compute.amazonaws.com/api/v1/"
 
 class BankantAPI():
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, api_url=None):
         self.username = username
         self.password = password
+        self.api_url = api_url or API_URL
 
     def _request_get(self, url_suffix, **kw):
-        url = urljoin(API_URL, url_suffix)
+        url = urljoin(self.api_url, url_suffix)
         r = requests.get(url,
                          auth=(self.username, self.password), **kw)
         return r
 
     def image_upload(self, filename):
-        url = urljoin(API_URL, "image/upload")
+        url = urljoin(self.api_url, "image/upload")
         r = requests.post(url,
                           files={'image': open(filename, 'rb')},
                           auth=(self.username, self.password))
@@ -65,19 +66,20 @@ class BankantAPI():
         assert r.status_code == 200, r.status_code
         return r['images']
 
+    #    User Management
+
     def _request_user(self, method, data):
-        url = urljoin(API_URL, "user")
+        url = urljoin(self.api_url, "user")
         r = requests.request(method, url,
-                    data=data,
-                    headers={'Content-Type': 'application/json'},
+                    data=dumps(data),
+                    headers={'content-type': 'application/json'},
                     auth=(self.username, self.password))
         return r
-
-    #
 
     def user_create(self, username, password):
         r = self._request_user("post",
                         {'username': username, 'password': password})
+        print r.content
         return r.status_code == 200
 
     def user_password(self, username, password):
