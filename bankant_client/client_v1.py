@@ -65,6 +65,31 @@ class BankantAPI():
         assert r.status_code == 200, r.status_code
         return r['images']
 
+    def _request_user(self, method, data):
+        url = urljoin(API_URL, "user")
+        r = requests.request(method, url,
+                    data=data,
+                    headers={'Content-Type': 'application/json'},
+                    auth=(self.username, self.password))
+        return r
+
+    #
+
+    def user_create(self, username, password):
+        r = self._request_user("post",
+                        {'username': username, 'password': password})
+        return r.status_code == 200
+
+    def user_password(self, username, password):
+        r = self._request_user("put",
+                        {'username': username, 'password': password})
+        return r.status_code == 200
+
+    def user_delete(self, username):
+        r = self._request_user("delete", {'username': username})
+        return r.status_code == 200
+
+
 """
 class BankAntImage():
 
