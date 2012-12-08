@@ -1,3 +1,4 @@
+import os.path
 from time import sleep
 from urlparse import urljoin
 from json import loads, dumps
@@ -22,10 +23,15 @@ class BankantAPI():
 
     #    Image Processing
 
-    def image_upload(self, filename):
+    def image_upload(self, filename, f=None):
+        """
+        upload image for processing
+        NOTE: filename or (filename and file object f)"
+        """
         url = urljoin(self.api_url, "image/upload")
         r = requests.post(url,
-                          files={'image': open(filename, 'rb')},
+                          files={'image': (os.path.basename(filename),
+                                           f if f else open(filename, 'rb'))},
                           auth=(self.username, self.password))
         assert r.status_code == 200, r.status_code
         ret = r.json
@@ -34,11 +40,13 @@ class BankantAPI():
 
     def image_result(self, image_id, result_type='ofx'):
         """
-        # curl works
-        # python-request still tries to do basic auth for redirection
-        # and get 400 "<Code>InvalidArgument</Code><Message>Either the Signature query string parameter or the Authorization header sho"
-        # from AWS S3
-        # so let emulate redirect two requests
+        Get processing result.
+
+        Implementation note:
+        curl work in single request. python-request doesn't
+        It seems python-request tried do basic auth for redirection url
+        AWS S3 don't like it and retunrn: 400 "<Code>InvalidArgument</Code><Message>Either the Signature query string parameter or the Authorization header sho"
+        so redirect emulated with two requests
         """
         assert result_type == 'ofx'
         r = self._request_get("image/result/{}".format(str(image_id)),
@@ -47,6 +55,14 @@ class BankantAPI():
         r = requests.get(r.headers['Location'])
         assert r.status_code == 200, (r.status_code, r.url, r.headers, r.text)
         return r.content
+
+    def image_result_to_file(self, image_id, filename):
+        """
+        Download result and save to filename
+        """
+        result_type = filename.split('.', 2)[1].lower()
+        result = self.image_result(image_id, result_type=result_type)
+        open(filename, "wb").write(result)
 
     def image_wait_result(self, image_id):
         for i in range(100):
