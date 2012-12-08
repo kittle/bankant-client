@@ -1,6 +1,14 @@
 bankant-client
 ==============
 
+##INSTALL
+
+pip install git+https://github.com/kittle/bankant-client.git
+
+
+
+##API
+
 from client_v1 import BankantAPI
 
 api = BankantAPI("user123", "pass123")
