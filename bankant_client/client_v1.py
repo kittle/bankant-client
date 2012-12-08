@@ -20,6 +20,8 @@ class BankantAPI():
                          auth=(self.username, self.password), **kw)
         return r
 
+    #    Image Processing
+
     def image_upload(self, filename):
         url = urljoin(self.api_url, "image/upload")
         r = requests.post(url,
