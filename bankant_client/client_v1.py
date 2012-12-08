@@ -66,7 +66,6 @@ class BankantAPI():
     def images(self):
         r = self._request_get("image/list")
         assert r.status_code == 200, r.status_code
-        import pudb; pudb.set_trace()
         return r.json['images']
 
     #    User Management
