@@ -22,6 +22,8 @@ image_id = api.image_upload("westpac_business_flexi.png")
 
 # wait for result and get it
 print api.image_wait_result(image_id)
+
+print api.images()
 ```
 
 ##User API

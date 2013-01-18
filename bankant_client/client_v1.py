@@ -3,6 +3,7 @@ from time import sleep
 from urlparse import urljoin
 from json import loads, dumps
 
+import dateutil.parser
 import requests
 
 API_URL = "http://ec2-54-252-42-78.ap-southeast-2.compute.amazonaws.com/api/v1/"
@@ -74,15 +75,24 @@ class BankantAPI():
             raise RuntimeError("Processing takes too long")
         return self.image_result(image_id)
 
+    @staticmethod
+    def _adopt_status(status):
+        if status.get("created"):
+            status["created"] = dateutil.parser.parse(status["created"])
+        if status.get("processed"):
+            status["processed"] = dateutil.parser.parse(status["processed"])
+        return status
+
     def image_status(self, image_id):
         r = self._request_get("image/status/{}".format(str(image_id)))
         assert r.status_code == 200, r.status_code
-        return r.json
+        return self._adopt_status(r.json)
 
     def images(self):
         r = self._request_get("image/list")
         assert r.status_code == 200, r.status_code
-        return r.json['images']
+        #import pudb; pudb.set_trace()
+        return map(self._adopt_status, r.json['images'])
 
     #    User Management
 
