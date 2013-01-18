@@ -6,7 +6,7 @@ from json import loads, dumps
 import dateutil.parser
 import requests
 
-API_URL = "http://ec2-54-252-42-78.ap-southeast-2.compute.amazonaws.com/api/v1/"
+API_URL = "https://ec2-54-252-42-78.ap-southeast-2.compute.amazonaws.com/api/v1/"
 
 
 class BankantAPI():
@@ -19,7 +19,7 @@ class BankantAPI():
     def _request_get(self, url_suffix, **kw):
         url = urljoin(self.api_url, url_suffix)
         r = requests.get(url,
-                         auth=(self.username, self.password), **kw)
+                    auth=(self.username, self.password), verify=False, **kw)
         return r
 
     #    Image Processing
@@ -33,7 +33,8 @@ class BankantAPI():
         r = requests.post(url,
                           files={'image': (os.path.basename(filename),
                                            f if f else open(filename, 'rb'))},
-                          auth=(self.username, self.password))
+                          auth=(self.username, self.password),
+                          verify=False)
         assert r.status_code == 200, r.status_code
         ret = r.json
         assert ret["status"] == "OK"
@@ -53,7 +54,7 @@ class BankantAPI():
         r = self._request_get("image/result/{}".format(str(image_id)),
                               allow_redirects=False)
         assert r.status_code == 307, (r.status_code, r.headers, r.text)
-        r = requests.get(r.headers['Location'])
+        r = requests.get(r.headers['Location'], verify=False)
         assert r.status_code == 200, (r.status_code, r.url, r.headers, r.text)
         return r.content
 
@@ -101,7 +102,8 @@ class BankantAPI():
         r = requests.request(method, url,
                     data=dumps(data),
                     headers={'content-type': 'application/json'},
-                    auth=(self.username, self.password))
+                    auth=(self.username, self.password),
+                    verify=False)
         return r
 
     def user_create(self, username, password):
