@@ -6,7 +6,7 @@ from json import loads, dumps
 import dateutil.parser
 import requests
 
-API_URL = "https://ec2-54-252-42-78.ap-southeast-2.compute.amazonaws.com/api/v1/"
+API_URL = "https://api.bankant.com/api/v1/"
 
 
 class BankantAPI():
@@ -51,7 +51,7 @@ class BankantAPI():
         so redirect emulated with two requests
         """
         assert result_type == 'ofx'
-        r = self._request_get("image/result/{}".format(str(image_id)),
+        r = self._request_get("images/{}/result".format(str(image_id)),
                               allow_redirects=False)
         assert r.status_code == 307, (r.status_code, r.headers, r.text)
         r = requests.get(r.headers['Location'], verify=False)
@@ -85,18 +85,19 @@ class BankantAPI():
         return status
 
     def image_status(self, image_id):
-        r = self._request_get("image/status/{}".format(str(image_id)))
+        r = self._request_get("images/{}/".format(str(image_id)))
         assert r.status_code == 200, r.status_code
         return self._adopt_status(r.json)
 
     def images(self):
-        r = self._request_get("image/list")
+        r = self._request_get("images/")
         assert r.status_code == 200, r.status_code
         #import pudb; pudb.set_trace()
-        return map(self._adopt_status, r.json['images'])
+        return map(self._adopt_status, r.json['objects'])
 
+    '''
     #    User Management
-
+    
     def _request_user(self, method, data):
         url = urljoin(self.api_url, "user")
         r = requests.request(method, url,
@@ -120,7 +121,7 @@ class BankantAPI():
     def user_delete(self, username):
         r = self._request_user("delete", {'username': username})
         return r.status_code == 200
-
+    '''
 
 """
 class BankAntImage():
